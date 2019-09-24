@@ -1,0 +1,331 @@
+Writing Tests in Go
+24 Sep 2019
+
+Ben Burwell
+ben@benburwell.com
+https://www.benburwell.com
+
+
+* Disclaimer
+
+- I am not going to tell you what to test
+
+
+* Caesar Cipher
+
+.link https://godoc.org/bnbl.io/caesar bnbl.io/caesar
+.image caesar.svg
+
+
+* A simple test
+
+.code ../caesar/caesar_test.go /^package/,/^}/
+.caption caesar_test.go
+
+
+* Building Blocks
+
+- `t.Log(string)`
+- `t.Logf(string,`...interface{})`
+- `t.Fail()`
+- `t.FailNow()`
+- ...
+- [[https://golang.org/pkg/testing]]
+
+
+* Multipe errors from one test
+
+    func Greet(name string) (string, error) {
+      if name == "" {
+        return "", fmt.Errorf("missing name")
+      }
+      return fmt.Sprintf("Hello, %s!", name)
+    }
+.caption greet.go
+
+    func TestGreetSpaces(t *testing.T) {
+      greeting, err := Greet("    ")
+      if err == nil {
+        t.Log("expected error, got nil")
+        t.Fail()
+      }
+      if greeting != "" {
+        t.Logf("expected no greeting, got %q", greeting)
+        t.Fail()
+      }
+    }
+.caption greet_test.go
+
+
+* Combo Methods
+
+    t.Error  = t.Log  + t.Fail
+    t.Errorf = t.Logf + t.Fail
+    t.Fatal  = t.Log  + t.FailNow
+    t.Fatalf = t.Logf + t.FailNow
+
+
+* Running tests
+
+
+* go vet
+
+    fmt.Printf("My name is %s")
+
+
+* go test Modes
+
+
+* Local directory
+
+    $ go test
+
+
+* Package list
+
+    $ go test net/http
+    $ go get bnbl.io/caesar && go test bnbl.io/caesar
+    $ go test ./random/subpackage
+    $ go test ./... # current directory and all subdirectories
+    $ go test .
+
+
+* Caching
+
+Package List Mode
+
+    $ go test .
+    ok      bnbl.io/caesar  0.006s
+    $ go test .
+    ok      bnbl.io/caesar  (cached)
+
+Local Directory Mode
+
+    $ go test
+    PASS
+    ok      bnbl.io/caesar  0.005s
+    $ go test
+    PASS
+    ok      bnbl.io/caesar  0.005s
+
+
+* Assert/Expect
+
+
+* Assertions are basically syntactic sugar
+
+    if cond {
+      t.FailNow()
+    }
+
+
+* Generic assertions aren't very helpful
+
+    func AssertNonNil(t *testing.T, val interface{}) {
+      if val == nil {
+        t.FailNow()
+      }
+    }
+
+    func TestFoo(t *testing.T) {
+      f := Foo()
+      AssertNonNil(t, f)
+    }
+
+
+* Helpful assertions are less generalizable
+
+    func AssertValidChecksum(t *testing.T, data, sum []byte) {
+      computed, err := calculateChecksum(data)
+      if err != nil {
+        t.Fatalf("could not compute expected value: %v", err)
+      }
+      if !bytes.Equal(computed, sum) {
+        t.Errorf("invalid checksum: expected %x, got %x", computed, sum)
+      }
+    }
+
+
+* Table Driven Testing
+
+
+* Slice of anonymous structs
+
+.code ../caesar/caesar_test.go /^func TestEncodeTable/,/^}/
+
+
+* Setup and teardown
+
+
+* TestMain
+
+    import (
+      "os"
+      "testing"
+    )
+
+    func TestMain(m *testing.M) {
+      os.Exit(m.Run())
+    }
+
+[[https://golang.org/src/net/main_test.go#L47][Example in net package]]
+
+
+* t.Run
+
+.code ../caesar/caesar_test.go /^func TestCoder/,/^}/
+
+.link https://golang.org/src/net/unixsock_test.go#L367 TestUnixUnlink
+
+.link https://golang.org/src/net/http/client_test.go#L1164 TestStripPasswordFromError
+
+
+* Running fewer tests
+
+
+* Running specific tests
+
+    $ go test -run Encode
+    $ go test -run Encode/Binary
+    $ go test -list Encode/Binary
+
+
+* Short mode
+
+    $ go test -short
+
+.code ../caesar/caesar_test.go /^func TestRepeatedEncode/,/^}/
+
+
+* Adding your own flags
+
+    $ go test -args -custom testdata/tests.txt
+    $ ./caesar.test -custom testdata/tests.txt
+
+.code ../caesar/custom_test.go /^var/,/^\t}/
+
+
+* HTTP
+
+
+* A Caesar Server
+
+.code ../caesar/server/main.go /^func handle/,/^}/
+
+
+* Testing servers
+
+.link https://golang.org/pkg/net/http/httptest/#ResponseRecorder httptest.ResponseRecorder
+
+.code ../caesar/server/main_test.go /^func TestHandleCaesar/,/^}/
+
+
+* Testing HTTP clients
+
+[[https://godoc.org/bnbl.io/caesar/client]]
+
+
+* Two sides of client testing
+
+- How does the client process and return responses?
+- How does the client interact with the server?
+
+
+* Testing how your client handles responses
+
+[[https://golang.org/pkg/net/http/httptest/#Server][httptest.Server]]
+
+.code ../caesar/client/client_test.go /^func TestEncode/,/^}/
+
+
+* Testing the requests your client makes
+
+.code ../caesar/client/client_test.go /^func TestUserAgent/,/^}/
+
+
+* Coverage
+
+
+* Collecting coverage
+
+    $ go test -coverprofile coverage.out
+
+
+* go tool cover
+
+    $ go tool cover -html coverage.out
+
+
+* Coverage Mode
+
+    $ go test -coverprofile coverage.out -covermode count
+
+
+* Benchmarking
+
+
+* Writing benchmarks
+
+.code ../caesar/caesar_test.go /^func BenchmarkEncode/,/^}/
+.caption caesar_test.go
+
+
+* Running benchmarks
+
+    $ go test -bench Encode
+    goos: darwin
+    goarch: amd64
+    pkg: bnbl.io/caesar
+    BenchmarkEncode-8        4203966               285 ns/op
+    PASS
+    ok      bnbl.io/caesar  2.079s
+
+    $ go test -run NONE -bench .
+    goos: darwin
+    goarch: amd64
+    pkg: bnbl.io/caesar
+    BenchmarkEncode-8        4138119               286 ns/op
+    PASS
+    ok      bnbl.io/caesar  1.483s
+
+
+* An example from the standard library
+
+.link https://github.com/golang/go/commit/8ef6d6a8f24354ef167f9dca54ab64e1ea6579f0 encoding/base32
+
+
+* benchstat
+
+    $ go install golang.org/x/perf/cmd/benchstat
+    $ go test -bench Encode -count 5 > old
+    $ go test -bench Encode -count 5 > new
+    $ benchstat old new
+
+
+* Examples
+
+
+* Example Example
+
+.code ../caesar/example_test.go /^package/,/^}/
+.caption example_test.go
+
+[[https://godoc.org/bnbl.io/caesar][Result on GoDoc.org]]
+
+
+* Reference Material
+
+Going deeper...
+
+- [[https://github.com/stretchr/testify]]
+- [[https://github.com/matryer/is]]
+- [[https://jvns.ca/blog/2017/09/24/profiling-go-with-pprof/]]
+
+Source code
+
+- [[https://bnbl.io/caesar]]
+
+Slides
+
+- [[https://talks.godoc.org/github.com/benburwell/testing-talk]]
+
