@@ -19,7 +19,7 @@ https://www.benburwell.com
 
 * A simple test
 
-.code ../caesar/caesar_test.go /^package/,/^}/
+.code caesar/caesar_test.go /^package/,/^}/
 .caption caesar_test.go
 
 
@@ -151,7 +151,7 @@ Local Directory Mode
 
 * Slice of anonymous structs
 
-.code ../caesar/caesar_test.go /^func TestEncodeTable/,/^}/
+.code caesar/caesar_test.go /^func TestEncodeTable/,/^}/
 
 
 * Setup and teardown
@@ -173,7 +173,7 @@ Local Directory Mode
 
 * t.Run
 
-.code ../caesar/caesar_test.go /^func TestCoder/,/^}/
+.code caesar/caesar_test.go /^func TestCoder/,/^}/
 
 .link https://golang.org/src/net/unixsock_test.go#L367 TestUnixUnlink
 
@@ -194,7 +194,7 @@ Local Directory Mode
 
     $ go test -short
 
-.code ../caesar/caesar_test.go /^func TestRepeatedEncode/,/^}/
+.code caesar/caesar_test.go /^func TestRepeatedEncode/,/^}/
 
 
 * Adding your own flags
@@ -202,7 +202,7 @@ Local Directory Mode
     $ go test -args -custom testdata/tests.txt
     $ ./caesar.test -custom testdata/tests.txt
 
-.code ../caesar/custom_test.go /^var/,/^\t}/
+.code caesar/custom_test.go /^var/,/^\t}/
 
 
 * HTTP
@@ -210,14 +210,14 @@ Local Directory Mode
 
 * A Caesar Server
 
-.code ../caesar/server/main.go /^func handle/,/^}/
+.code caesar/server/main.go /^func handle/,/^}/
 
 
 * Testing servers
 
 .link https://golang.org/pkg/net/http/httptest/#ResponseRecorder httptest.ResponseRecorder
 
-.code ../caesar/server/main_test.go /^func TestHandleCaesar/,/^}/
+.code caesar/server/main_test.go /^func TestHandleCaesar/,/^}/
 
 
 * Testing HTTP clients
@@ -235,12 +235,12 @@ Local Directory Mode
 
 [[https://golang.org/pkg/net/http/httptest/#Server][httptest.Server]]
 
-.code ../caesar/client/client_test.go /^func TestEncode/,/^}/
+.code caesar/client/client_test.go /^func TestEncode/,/^}/
 
 
 * Testing the requests your client makes
 
-.code ../caesar/client/client_test.go /^func TestUserAgent/,/^}/
+.code caesar/client/client_test.go /^func TestUserAgent/,/^}/
 
 
 * Coverage
@@ -266,7 +266,7 @@ Local Directory Mode
 
 * Writing benchmarks
 
-.code ../caesar/caesar_test.go /^func BenchmarkEncode/,/^}/
+.code caesar/caesar_test.go /^func BenchmarkEncode/,/^}/
 .caption caesar_test.go
 
 
@@ -307,7 +307,7 @@ Local Directory Mode
 
 * Example Example
 
-.code ../caesar/example_test.go /^package/,/^}/
+.code caesar/example_test.go /^package/,/^}/
 .caption example_test.go
 
 [[https://godoc.org/bnbl.io/caesar][Result on GoDoc.org]]
